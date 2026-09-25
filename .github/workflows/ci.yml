@@ -51,7 +51,19 @@ jobs:
       - name: Migrations apply cleanly on an empty database
         run: alembic upgrade head && alembic check
       - name: Tests (the LLM is faked; no Ollama needed)
-        run: pytest -v
+        # --timeout-method=thread: if a test hangs, print where every thread is stuck and end the run,
+        # so the job finishes and its log is kept.
+        # The memory cap and the hard kill stop a runaway test before it can freeze the whole runner.
+        run: |
+          ulimit -v 8000000
+          timeout -k 10 480 pytest -v --timeout=60 --timeout-method=thread
+        timeout-minutes: 10
+      - name: Runner resources (for debugging)
+        if: always()
+        run: |
+          free -m
+          df -h /
+          docker stats --no-stream
       - name: Known vulnerabilities in Python dependencies
         run: pip-audit -r requirements.txt
 
