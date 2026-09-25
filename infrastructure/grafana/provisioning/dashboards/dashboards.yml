@@ -1,0 +1,8 @@
+# Load every dashboard JSON file in /var/lib/grafana/dashboards at start-up.
+apiVersion: 1
+providers:
+  - name: ai-support
+    folder: AI Support
+    type: file
+    options:
+      path: /var/lib/grafana/dashboards

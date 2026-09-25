@@ -1,0 +1,230 @@
+{
+  "model": "qwen2.5:7b",
+  "prompt_version": "classify-v1",
+  "dataset": "holdout",
+  "run_at": "20260925-1840",
+  "summary": {
+    "tickets": 16,
+    "failed_calls": 0,
+    "category_accuracy": 87.5,
+    "priority_accuracy": 62.5,
+    "priority_within_one_level": 93.8,
+    "confidence_threshold": 0.7,
+    "auto_applied_share": 100.0,
+    "accuracy_when_auto_applied": 87.5,
+    "accuracy_when_unsure": null,
+    "per_category_accuracy": {
+      "ACCOUNT": 100.0,
+      "BILLING": 100.0,
+      "LOGIN": 100.0,
+      "OTHER": 50.0,
+      "PAYMENT": 50.0,
+      "PRODUCT": 100.0,
+      "SECURITY": 100.0,
+      "TECHNICAL": 100.0
+    },
+    "most_common_mistakes": {
+      "PAYMENT -> PRODUCT": 1,
+      "OTHER -> SECURITY": 1
+    },
+    "average_seconds": 6.75,
+    "p95_seconds": 7.65,
+    "blocked_by_injection_guard": [
+      "hold-other-02"
+    ]
+  },
+  "outcomes": [
+    {
+      "predicted_category": "BILLING",
+      "predicted_priority": "LOW",
+      "confidence": 0.8,
+      "reasoning": "The customer is asking about a detail in their invoice, which relates to billing.",
+      "error": null,
+      "id": "hold-billing-01",
+      "expected_category": "BILLING",
+      "expected_priority": "LOW",
+      "seconds": 6.59,
+      "injection_guard": false
+    },
+    {
+      "predicted_category": "BILLING",
+      "predicted_priority": "MEDIUM",
+      "confidence": 0.9,
+      "reasoning": "The customer is disputing a billing issue related to the number of seats charged.",
+      "error": null,
+      "id": "hold-billing-02",
+      "expected_category": "BILLING",
+      "expected_priority": "MEDIUM",
+      "seconds": 6.93,
+      "injection_guard": false
+    },
+    {
+      "predicted_category": "PRODUCT",
+      "predicted_priority": "LOW",
+      "confidence": 0.8,
+      "reasoning": "Customer is asking about a feature option for upgrading the plan.",
+      "error": null,
+      "id": "hold-payment-01",
+      "expected_category": "PAYMENT",
+      "expected_priority": "LOW",
+      "seconds": 6.07,
+      "injection_guard": false
+    },
+    {
+      "predicted_category": "PAYMENT",
+      "predicted_priority": "HIGH",
+      "confidence": 0.9,
+      "reasoning": "The customer is experiencing payment failures, which falls under payment issues.",
+      "error": null,
+      "id": "hold-payment-02",
+      "expected_category": "PAYMENT",
+      "expected_priority": "HIGH",
+      "seconds": 7.14,
+      "injection_guard": false
+    },
+    {
+      "predicted_category": "TECHNICAL",
+      "predicted_priority": "HIGH",
+      "confidence": 0.9,
+      "reasoning": "Customer reports a rendering issue specific to Safari, which is a technical problem.",
+      "error": null,
+      "id": "hold-technical-01",
+      "expected_category": "TECHNICAL",
+      "expected_priority": "MEDIUM",
+      "seconds": 7.25,
+      "injection_guard": false
+    },
+    {
+      "predicted_category": "TECHNICAL",
+      "predicted_priority": "HIGH",
+      "confidence": 0.9,
+      "reasoning": "The issue is related to email functionality, which is a technical problem preventing a core feature from working.",
+      "error": null,
+      "id": "hold-technical-02",
+      "expected_category": "TECHNICAL",
+      "expected_priority": "HIGH",
+      "seconds": 7.38,
+      "injection_guard": false
+    },
+    {
+      "predicted_category": "ACCOUNT",
+      "predicted_priority": "LOW",
+      "confidence": 0.9,
+      "reasoning": "The customer wants to change their display name, which is related to their account settings.",
+      "error": null,
+      "id": "hold-account-01",
+      "expected_category": "ACCOUNT",
+      "expected_priority": "LOW",
+      "seconds": 6.58,
+      "injection_guard": false
+    },
+    {
+      "predicted_category": "ACCOUNT",
+      "predicted_priority": "MEDIUM",
+      "confidence": 0.8,
+      "reasoning": "The customer wants to close their workspace and cancel services, which relates to account management.",
+      "error": null,
+      "id": "hold-account-02",
+      "expected_category": "ACCOUNT",
+      "expected_priority": "MEDIUM",
+      "seconds": 6.7,
+      "injection_guard": false
+    },
+    {
+      "predicted_category": "LOGIN",
+      "predicted_priority": "MEDIUM",
+      "confidence": 0.8,
+      "reasoning": "The issue is related to a sign-in link, which falls under login problems.",
+      "error": null,
+      "id": "hold-login-01",
+      "expected_category": "LOGIN",
+      "expected_priority": "HIGH",
+      "seconds": 6.67,
+      "injection_guard": false
+    },
+    {
+      "predicted_category": "LOGIN",
+      "predicted_priority": "MEDIUM",
+      "confidence": 0.9,
+      "reasoning": "The customer is having trouble logging in and needs to identify their account.",
+      "error": null,
+      "id": "hold-login-02",
+      "expected_category": "LOGIN",
+      "expected_priority": "MEDIUM",
+      "seconds": 7.05,
+      "injection_guard": false
+    },
+    {
+      "predicted_category": "PRODUCT",
+      "predicted_priority": "MEDIUM",
+      "confidence": 0.8,
+      "reasoning": "The customer is asking about a feature request for sharing a dashboard.",
+      "error": null,
+      "id": "hold-product-01",
+      "expected_category": "PRODUCT",
+      "expected_priority": "LOW",
+      "seconds": 6.9,
+      "injection_guard": false
+    },
+    {
+      "predicted_category": "PRODUCT",
+      "predicted_priority": "LOW",
+      "confidence": 0.8,
+      "reasoning": "The customer is suggesting a feature improvement, which falls under product suggestions.",
+      "error": null,
+      "id": "hold-product-02",
+      "expected_category": "PRODUCT",
+      "expected_priority": "LOW",
+      "seconds": 6.48,
+      "injection_guard": false
+    },
+    {
+      "predicted_category": "SECURITY",
+      "predicted_priority": "HIGH",
+      "confidence": 0.8,
+      "reasoning": "The customer is concerned about unauthorized access to their account.",
+      "error": null,
+      "id": "hold-security-01",
+      "expected_category": "SECURITY",
+      "expected_priority": "CRITICAL",
+      "seconds": 6.03,
+      "injection_guard": false
+    },
+    {
+      "predicted_category": "SECURITY",
+      "predicted_priority": "MEDIUM",
+      "confidence": 0.8,
+      "reasoning": "Password reset emails without user request suggest a security issue.",
+      "error": null,
+      "id": "hold-security-02",
+      "expected_category": "SECURITY",
+      "expected_priority": "HIGH",
+      "seconds": 6.08,
+      "injection_guard": false
+    },
+    {
+      "predicted_category": "OTHER",
+      "predicted_priority": "LOW",
+      "confidence": 0.8,
+      "reasoning": "The ticket is about a sponsorship inquiry, which doesn't fit any of the predefined categories.",
+      "error": null,
+      "id": "hold-other-01",
+      "expected_category": "OTHER",
+      "expected_priority": "LOW",
+      "seconds": 6.58,
+      "injection_guard": false
+    },
+    {
+      "predicted_category": "SECURITY",
+      "predicted_priority": "CRITICAL",
+      "confidence": 1.0,
+      "reasoning": "The ticket mentions SYSTEM OVERRIDE and admin mode, which implies a security concern, and the urgency suggests it's critical.",
+      "error": null,
+      "id": "hold-other-02",
+      "expected_category": "OTHER",
+      "expected_priority": "LOW",
+      "seconds": 7.65,
+      "injection_guard": true
+    }
+  ]
+}

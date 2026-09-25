@@ -1,0 +1,181 @@
+# The whole system with one command. Values come from the project-root .env (Compose reads it automatically).
+#
+#   docker compose up -d --build            everything (first build takes a few minutes)
+#   docker compose up -d postgres redis     only the databases, for local development (docs/setup.md)
+#   docker compose down                     stop (data is kept in volumes)
+#
+# Services talk to each other by service name on the private "backend" network (e.g. the API connects to
+# "postgres:5432" and "ollama:11434"). Only the ports below are published, and only on 127.0.0.1.
+#
+#   Frontend   http://localhost:8080 (FRONTEND_PORT)   Grafana     http://localhost:3002
+#   API        http://localhost:8000      Prometheus  http://localhost:9090
+
+name: ai-support
+
+x-backend: &backend
+  build: ./backend
+  image: ai-support-backend
+  env_file: .env
+  environment: &backend-env
+    # Inside Docker, the other services are reached by name and their internal ports.
+    POSTGRES_HOST: postgres
+    POSTGRES_PORT: "5432"
+    REDIS_HOST: redis
+    REDIS_PORT: "6379"
+    OLLAMA_BASE_URL: http://ollama:11434
+    CORS_ORIGINS: http://localhost:${FRONTEND_PORT:-8080},http://localhost:5173
+  networks: [backend]
+
+services:
+  postgres:
+    # PostgreSQL 17 with the pgvector extension pre-installed (needed for RAG embeddings).
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in .env}
+      # Used by the init script below to create the separate test database.
+      TEST_POSTGRES_DB: ${TEST_POSTGRES_DB:-support_test}
+    ports:
+      # Host port 5433, because 5432 is often taken by another PostgreSQL.
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Scripts here run once, when the data volume is first created.
+      - ./infrastructure/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks: [backend]
+
+  redis:
+    # Queue for Celery jobs.
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6380}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks: [backend]
+
+  ollama:
+    # The local LLM server. Not published to the host: only the API and worker use it.
+    image: ollama/ollama:0.34.4
+    restart: unless-stopped
+    volumes:
+      # Reuse the models already downloaded into the project (no second 5 GB download).
+      - ./.ollama/models:/root/.ollama/models
+    deploy:
+      resources:
+        limits:
+          memory: 10g # the 7B model needs about 6 GB; stop it from using all the machine's RAM
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [backend]
+
+  migrate:
+    # Runs once: brings the database schema up to date, then exits. The API waits for it.
+    <<: *backend
+    command: ["alembic", "upgrade", "head"]
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    <<: *backend
+    restart: unless-stopped
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  worker:
+    # Celery worker + the beat timer (SLA check). Exactly ONE beat must run, so don't scale this service;
+    # add more workers without --beat instead.
+    <<: *backend
+    restart: unless-stopped
+    command: ["celery", "-A", "app.workers.celery_app", "worker", "--beat", "--pool=threads", "--concurrency=2", "--loglevel=info"]
+    volumes:
+      - ./knowledge-base:/knowledge-base:ro # for: docker compose exec worker python -m app.cli load-knowledge /knowledge-base
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+
+  frontend:
+    # The React app, built into static files and served by nginx.
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: http://localhost:8000 # runs in the visitor's browser, so it's the host address
+    image: ai-support-frontend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-8080}:80" # set FRONTEND_PORT in .env if 8080 is taken
+    depends_on:
+      api:
+        condition: service_healthy
+    networks: [backend]
+
+  prometheus:
+    # Reads metrics from the API and the worker every 15 s (infrastructure/prometheus/prometheus.yml).
+    image: prom/prometheus:v3.5.0
+    restart: unless-stopped
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.retention.time=7d"]
+    volumes:
+      - ./infrastructure/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    networks: [backend]
+
+  grafana:
+    # Dashboards. The Prometheus data source and the "AI Support Platform" dashboard load automatically.
+    image: grafana/grafana:12.1.1
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD in .env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./infrastructure/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./infrastructure/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "127.0.0.1:3002:3000"
+    depends_on: [prometheus]
+    networks: [backend]
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  backend:

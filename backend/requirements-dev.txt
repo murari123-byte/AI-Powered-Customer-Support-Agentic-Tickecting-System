@@ -1,0 +1,6 @@
+# Development and test dependencies (not needed to run the app).
+-r requirements.txt
+pytest==9.1.1
+# Lint + format (run: ruff check . && ruff format --check .) and dependency vulnerability scan (pip-audit).
+ruff==0.16.9
+pip-audit==2.10.1

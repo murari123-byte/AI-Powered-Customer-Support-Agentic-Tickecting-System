@@ -1,0 +1,16 @@
+# Python linter settings (run: .venv/bin/ruff check .)
+line-length = 120
+target-version = "py312"
+
+[lint]
+# E/W = style errors, F = real bugs (unused imports, undefined names), I = import order,
+# B = likely bugs (bugbear), S = security checks (bandit), UP = modern Python syntax.
+select = ["E", "W", "F", "I", "B", "S", "UP"]
+ignore = [
+    "B008",  # FastAPI's Depends(...) in default arguments is the intended pattern
+    "E501",  # line length is handled by `ruff format`; the lines still longer are prompt/scenario TEXT, which must not be re-wrapped
+]
+
+[lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106"]   # assert and test passwords are fine in tests
+"evals/**" = ["S101", "S105", "S106"]

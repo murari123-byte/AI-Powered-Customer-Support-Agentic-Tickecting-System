@@ -1,0 +1,22 @@
+# Runtime dependencies. Versions are pinned so every machine installs the same thing.
+fastapi==0.141.1
+uvicorn[standard]==0.54.0
+pydantic-settings==2.15.0
+# HTTP client for calling the Ollama REST API (also used by FastAPI's TestClient).
+httpx2==2.13.1
+# Database: ORM, PostgreSQL driver (psycopg 3), and schema migrations.
+sqlalchemy==2.1.1
+psycopg[binary]==3.3.6
+alembic==1.20.0
+# Authentication: JWT signing, Argon2 password hashing, email validation for Pydantic's EmailStr.
+pyjwt==2.15.0
+argon2-cffi==25.1.0
+email-validator==2.3.0
+# Background jobs: Celery worker + beat, with Redis as the queue (installs redis 6.4.0).
+celery[redis]==5.6.3
+# RAG: vector column type for SQLAlchemy, PDF text extraction, and file uploads in FastAPI.
+pgvector==0.5.0
+pypdf==6.19.0
+python-multipart==0.0.32
+# Metrics for Prometheus (API /metrics and the worker on port 9808).
+prometheus-client==0.26.0

@@ -1,0 +1,14 @@
+# Prometheus reads ("scrapes") metrics from these services every 15 seconds.
+# Names like "api" and "worker" are the service names in docker-compose.yml (Docker's internal DNS).
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: api
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["api:8000"]
+
+  - job_name: worker
+    static_configs:
+      - targets: ["worker:9808"]

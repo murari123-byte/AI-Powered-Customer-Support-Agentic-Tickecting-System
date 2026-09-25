@@ -1,0 +1,28 @@
+# Secrets and local settings
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Node / frontend
+node_modules/
+dist/
+
+# Editors and OS
+.idea/
+.DS_Store
+
+# Local Ollama program and models (several GB, never commit)
+.ollama/
+
+# Logs
+logs/
+*.log
+.ruff_cache/
+.coverage
+htmlcov/
