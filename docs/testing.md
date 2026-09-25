@@ -50,6 +50,7 @@ If Docker isn't running, the database tests are **skipped with a message**, not 
   migrations (the same way production does it).
 - **Each test is rolled back** at the end, so tests never see each other's data.
 - **The LLM is faked** (`tests/fakes.py`) so AI tests are fast and give the same result every time.
+- **Time limit**: any single test that runs longer than 60 s fails with a stack trace (`pytest-timeout`), and each CI job stops after 15 minutes, so a hang can't block CI.
 - **Test world**: the `world` fixture creates 2 customers, 2 agents, a manager, an admin and 2 teams.
 
 ## Were the tests checked?

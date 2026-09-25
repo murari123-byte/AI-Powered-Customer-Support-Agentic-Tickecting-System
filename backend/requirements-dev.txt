@@ -1,6 +1,8 @@
 # Development and test dependencies (not needed to run the app).
 -r requirements.txt
 pytest==9.1.1
+# Stops any single test after 60 s and prints where it was stuck, so a hang can never block CI.
+pytest-timeout==2.4.0
 # Lint + format (run: ruff check . && ruff format --check .) and dependency vulnerability scan (pip-audit).
 ruff==0.16.9
 pip-audit==2.10.1

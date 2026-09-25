@@ -11,6 +11,8 @@ on:
 jobs:
   backend:
     runs-on: ubuntu-latest
+    # Stop a stuck run after 15 minutes instead of waiting for GitHub's 6-hour limit.
+    timeout-minutes: 15
     services:
       postgres:
         image: pgvector/pgvector:pg17
@@ -55,6 +57,7 @@ jobs:
 
   frontend:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: frontend
@@ -77,6 +80,7 @@ jobs:
 
   docker:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: [backend, frontend]
     steps:
       - uses: actions/checkout@v4
